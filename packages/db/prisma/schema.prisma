@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  INTERNAL
+}
+
+enum SolicitudTipo {
+  MANTENCION
+  ADMINISTRACION
+  DIFUSION
+  OTRO
+}
+
+enum SolicitudEstado {
+  PENDIENTE
+  EN_PROCESO
+  RESUELTA
+  RECHAZADA
+}
+
+enum EspacioTipo {
+  SALA
+  SALON
+  CANCHA
+}
+
+enum ReservaEstado {
+  ACTIVA
+  CANCELADA
+}
+
+model User {
+  id           String                @id @default(cuid())
+  email        String                @unique
+  name         String                @default("")
+  passwordHash String
+  role         Role
+  createdAt    DateTime              @default(now())
+  active       Boolean               @default(true)
+
+  solicitudes Solicitud[]            @relation("SolicitudCreatedBy")
+  comentarios SolicitudComentario[]  @relation("ComentarioAutor")
+  reservas    Reserva[]
+  sesiones    Session[]
+  auditLogs   AuditLog[]             @relation("AuditActor")
+  passwordResetTokens PasswordResetToken[]
+  passwordResetCreated PasswordResetToken[] @relation("PasswordResetCreatedBy")
+}
+
+model Solicitud {
+  id           String               @id @default(cuid())
+  tipo         SolicitudTipo
+  estado       SolicitudEstado      @default(PENDIENTE)
+  titulo       String
+  descripcion  String
+  createdById  String
+  createdBy    User                 @relation("SolicitudCreatedBy", fields: [createdById], references: [id])
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  comentarios SolicitudComentario[]
+
+  @@index([estado])
+}
+
+model SolicitudComentario {
+  id          String     @id @default(cuid())
+  solicitudId String
+  autorId     String
+  comentario  String
+  createdAt   DateTime   @default(now())
+
+  solicitud   Solicitud  @relation(fields: [solicitudId], references: [id])
+  autor       User       @relation("ComentarioAutor", fields: [autorId], references: [id])
+}
+
+model Espacio {
+  id        String      @id @default(cuid())
+  nombre    String
+  tipo      EspacioTipo
+  activo    Boolean     @default(true)
+
+  reservas  Reserva[]
+  eventos   Evento[]
+}
+
+model Reserva {
+  id         String        @id @default(cuid())
+  espacioId  String
+  usuarioId  String
+  fechaInicio DateTime
+  fechaFin   DateTime
+  estado     ReservaEstado @default(ACTIVA)
+  createdAt  DateTime      @default(now())
+
+  espacio    Espacio       @relation(fields: [espacioId], references: [id])
+  usuario    User          @relation(fields: [usuarioId], references: [id])
+
+  @@index([fechaInicio, fechaFin])
+}
+
+model Evento {
+  id         String   @id @default(cuid())
+  titulo     String
+  descripcion String
+  fechaInicio DateTime
+  fechaFin   DateTime
+  espacioId  String
+  programaSlug String?
+
+  espacio    Espacio  @relation(fields: [espacioId], references: [id])
+
+  @@index([programaSlug])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?
+  entityType  String
+  entityId    String
+  action      String
+  before      Json?
+  after       Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  actorUser   User?    @relation("AuditActor", fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  ip        String?
+  userAgent String?
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  codeHash   String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  usedAt     DateTime?
+  createdById String?
+
+  user       User     @relation(fields: [userId], references: [id])
+  createdBy  User?    @relation("PasswordResetCreatedBy", fields: [createdById], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+}
