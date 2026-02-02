@@ -74,9 +74,10 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
         },
       })
     : [];
+  type AuditLogItem = (typeof auditLogs)[number];
 
   const reservaIds = auditLogs
-    .map((log) => (log.after as { reservaId?: string } | null)?.reservaId)
+    .map((log: AuditLogItem) => (log.after as { reservaId?: string } | null)?.reservaId)
     .filter((id): id is string => Boolean(id));
 
   const reservas = reservaIds.length
