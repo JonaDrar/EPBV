@@ -10,6 +10,7 @@
     "build": "npm --workspace apps/web run build",
     "start": "npm --workspace apps/web run start",
     "lint": "npm --workspace apps/web run lint",
+    "postinstall": "npm --workspace @ebv/db run prisma:generate",
     "prisma:generate": "npm --workspace @ebv/db run prisma:generate",
     "prisma:migrate": "npm --workspace @ebv/db run prisma:migrate"
   }
