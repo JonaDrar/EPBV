@@ -10,6 +10,7 @@ export default async function EventosPage() {
     include: { espacio: true },
     orderBy: { fechaInicio: "asc" },
   });
+  type EventoItem = (typeof eventos)[number];
 
   const programNameBySlug = new Map(programs.map((program) => [program.slug, program.name]));
 
@@ -45,7 +46,7 @@ export default async function EventosPage() {
             </tr>
           </thead>
           <tbody>
-            {eventos.map((evento) => (
+            {eventos.map((evento: EventoItem) => (
               <tr key={evento.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td>{evento.titulo}</td>
                 <td>{programNameBySlug.get(evento.programaSlug ?? "") ?? "—"}</td>
