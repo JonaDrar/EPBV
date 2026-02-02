@@ -1,4 +1,4 @@
-import { prisma, Prisma } from "@ebv/db";
+import { prisma } from "@ebv/db";
 import { requireUser } from "@/lib/auth-server";
 import { AdminHeader } from "@/components/AdminHeader";
 
@@ -14,9 +14,6 @@ export default async function AuditoriaPage() {
     include: { actorUser: true },
   });
 
-  type AuditLogWithActor = Prisma.AuditLogGetPayload<{
-    include: { actorUser: true };
-  }>;
 
   return (
     <div>
@@ -43,7 +40,7 @@ export default async function AuditoriaPage() {
             </tr>
           </thead>
           <tbody>
-            {logs.map((log: AuditLogWithActor) => (
+            {logs.map((log) => (
               <tr key={log.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td>{log.createdAt.toLocaleString()}</td>
                 <td>{log.actorUser?.email ?? "-"}</td>
