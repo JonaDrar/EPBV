@@ -1,4 +1,7 @@
-import type { User } from "@ebv/db";
+type User = {
+  email: string;
+  role: "ADMIN" | "INTERNAL";
+};
 import { LogoutButton } from "./LogoutButton";
 
 export function Topbar({ user }: { user: User }) {
