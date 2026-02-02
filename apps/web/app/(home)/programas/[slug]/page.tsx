@@ -78,7 +78,7 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
 
   const reservaIds = auditLogs
     .map((log: AuditLogItem) => (log.after as { reservaId?: string } | null)?.reservaId)
-    .filter((id): id is string => Boolean(id));
+    .filter((id: string | undefined | null): id is string => Boolean(id));
 
   const reservas = reservaIds.length
     ? await prisma.reserva.findMany({
