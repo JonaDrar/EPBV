@@ -11,6 +11,7 @@ export default async function EspaciosPage() {
   }
 
   const espacios = await prisma.espacio.findMany({ orderBy: { nombre: "asc" } });
+  type EspacioItem = (typeof espacios)[number];
 
   return (
     <div>
@@ -35,7 +36,7 @@ export default async function EspaciosPage() {
             </tr>
           </thead>
           <tbody>
-            {espacios.map((espacio) => (
+            {espacios.map((espacio: EspacioItem) => (
               <tr key={espacio.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td>{espacio.nombre}</td>
                 <td>{espacio.tipo}</td>
