@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { prisma } from "./client";
 
 type AuditInput = {
@@ -6,10 +5,19 @@ type AuditInput = {
   entityType: string;
   entityId: string;
   action: string;
-  before?: Prisma.InputJsonValue | null;
-  after?: Prisma.InputJsonValue | null;
-  metadata?: Prisma.InputJsonValue | null;
+  before?: unknown;
+  after?: unknown;
+  metadata?: unknown;
 };
+
+function toJsonSafe(value: unknown) {
+  if (value === undefined) return null;
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return null;
+  }
+}
 
 export async function logAuditEvent(input: AuditInput) {
   return prisma.auditLog.create({
@@ -18,9 +26,9 @@ export async function logAuditEvent(input: AuditInput) {
       entityType: input.entityType,
       entityId: input.entityId,
       action: input.action,
-      before: input.before ?? Prisma.JsonNull,
-      after: input.after ?? Prisma.JsonNull,
-      metadata: input.metadata ?? Prisma.JsonNull,
+      before: toJsonSafe(input.before) as any,
+      after: toJsonSafe(input.after) as any,
+      metadata: toJsonSafe(input.metadata) as any,
     },
   });
 }
