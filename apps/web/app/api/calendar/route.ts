@@ -43,6 +43,8 @@ export async function GET(req: NextRequest) {
       orderBy: { fechaInicio: "asc" },
     }),
   ]);
+  type ReservaItem = (typeof reservas)[number];
+  type EventoItem = (typeof eventos)[number];
 
   let solicitudEvents: Array<Record<string, unknown>> = [];
   if (includeSolicitudes && auth?.user.role === "ADMIN") {
@@ -88,7 +90,7 @@ export async function GET(req: NextRequest) {
   }
 
   const events = [
-    ...reservas.map((reserva) => ({
+    ...reservas.map((reserva: ReservaItem) => ({
       id: `reserva-${reserva.id}`,
       title: `Reserva • ${reserva.espacio.nombre}`,
       start: reserva.fechaInicio.toISOString(),
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest) {
       backgroundColor: "#2b8dd6",
       borderColor: "#2b8dd6",
     })),
-    ...eventos.map((evento) => ({
+    ...eventos.map((evento: EventoItem) => ({
       id: `evento-${evento.id}`,
       title: evento.titulo,
       start: evento.fechaInicio.toISOString(),
