@@ -172,7 +172,7 @@ export default async function SolicitudesPage() {
                 </div>
               ) : (
                 <div className={styles.historyRows}>
-                  {historial.map((solicitud) => (
+                  {historial.map((solicitud: SolicitudItem) => (
                     <div key={solicitud.id} className={styles.historyRow}>
                       <div>
                         <div className={styles.rowTitle}>{solicitud.titulo}</div>
