@@ -14,6 +14,7 @@ export default async function UsuariosPage() {
   }
 
   const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
+  type UserRow = (typeof users)[number];
 
   return (
     <div>
@@ -42,7 +43,7 @@ export default async function UsuariosPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((row) => (
+            {users.map((row: UserRow) => (
               <tr key={row.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td>
                   <UserNameInput userId={row.id} name={row.name} />
