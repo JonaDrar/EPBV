@@ -92,6 +92,7 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
         orderBy: { fechaInicio: "asc" },
       })
     : [];
+  type ReservaItem = (typeof reservas)[number];
 
   const upcomingActivities = [
     ...upcomingEventos.map((evento: EventoItem) => ({
@@ -99,7 +100,7 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
       title: evento.titulo,
       start: evento.fechaInicio,
     })),
-    ...reservas.map((reserva) => ({
+    ...reservas.map((reserva: ReservaItem) => ({
       id: `reserva-${reserva.id}`,
       title: `Reserva confirmada • ${reserva.espacio.nombre}`,
       start: reserva.fechaInicio,
