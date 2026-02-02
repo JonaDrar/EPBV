@@ -51,6 +51,7 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
     orderBy: { fechaInicio: "asc" },
     take: 5,
   });
+  type EventoItem = (typeof upcomingEventos)[number];
 
   const solicitudes = await prisma.solicitud.findMany({
     where: {
@@ -93,7 +94,7 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
     : [];
 
   const upcomingActivities = [
-    ...upcomingEventos.map((evento) => ({
+    ...upcomingEventos.map((evento: EventoItem) => ({
       id: `evento-${evento.id}`,
       title: evento.titulo,
       start: evento.fechaInicio,
