@@ -2,6 +2,9 @@ import { prisma } from "@ebv/db";
 import { requireUser } from "@/lib/auth-server";
 import { AdminHeader } from "@/components/AdminHeader";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AuditoriaPage() {
   const user = await requireUser();
   if (user.role !== "ADMIN") {
