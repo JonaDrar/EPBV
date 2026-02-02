@@ -12,6 +12,7 @@ export default async function ReservasPage() {
     include: { espacio: true, usuario: true },
     orderBy: { fechaInicio: "asc" },
   });
+  type ReservaItem = (typeof reservas)[number];
 
   return (
     <div>
@@ -47,7 +48,7 @@ export default async function ReservasPage() {
             </tr>
           </thead>
           <tbody>
-            {reservas.map((reserva) => (
+            {reservas.map((reserva: ReservaItem) => (
               <tr key={reserva.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td>{reserva.espacio.nombre}</td>
                 <td>{reserva.fechaInicio.toLocaleString()}</td>
