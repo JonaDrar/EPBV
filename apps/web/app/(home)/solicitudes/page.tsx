@@ -67,9 +67,14 @@ export default async function SolicitudesPage() {
     where: { createdById: user.id },
     orderBy: { createdAt: "desc" },
   });
+  type SolicitudItem = (typeof solicitudes)[number];
 
-  const activas = solicitudes.filter((s) => s.estado === "PENDIENTE" || s.estado === "EN_PROCESO");
-  const historial = solicitudes.filter((s) => s.estado === "RESUELTA" || s.estado === "RECHAZADA");
+  const activas = solicitudes.filter(
+    (s: SolicitudItem) => s.estado === "PENDIENTE" || s.estado === "EN_PROCESO"
+  );
+  const historial = solicitudes.filter(
+    (s: SolicitudItem) => s.estado === "RESUELTA" || s.estado === "RECHAZADA"
+  );
 
   return (
     <div className={styles.page}>
