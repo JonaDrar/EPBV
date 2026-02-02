@@ -62,8 +62,9 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
     orderBy: { updatedAt: "desc" },
     take: 20,
   });
+  type SolicitudItem = (typeof solicitudes)[number];
 
-  const solicitudIds = solicitudes.map((solicitud) => solicitud.id);
+  const solicitudIds = solicitudes.map((solicitud: SolicitudItem) => solicitud.id);
   const auditLogs = solicitudIds.length
     ? await prisma.auditLog.findMany({
         where: {
