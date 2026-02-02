@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Role } from "@ebv/db";
+type Role = "ADMIN" | "INTERNAL";
 
 const baseLinks = [
   { href: "/dashboard", label: "Inicio" },
