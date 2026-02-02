@@ -5,6 +5,7 @@ import { programs } from "@/lib/programs";
 
 export default async function EventosPage() {
   const espacios = await prisma.espacio.findMany({ where: { activo: true } });
+  type EspacioItem = (typeof espacios)[number];
   const eventos = await prisma.evento.findMany({
     include: { espacio: true },
     orderBy: { fechaInicio: "asc" },
@@ -23,7 +24,9 @@ export default async function EventosPage() {
           No hay espacios activos para agendar eventos.
         </div>
       ) : (
-        <EventoForm espacios={espacios.map((espacio) => ({ id: espacio.id, nombre: espacio.nombre }))} />
+        <EventoForm
+          espacios={espacios.map((espacio: EspacioItem) => ({ id: espacio.id, nombre: espacio.nombre }))}
+        />
       )}
       <div style={{
         padding: 16,
