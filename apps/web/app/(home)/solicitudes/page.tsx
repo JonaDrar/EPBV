@@ -131,7 +131,7 @@ export default async function SolicitudesPage() {
                 </div>
               ) : (
                 <div className={styles.panelRows}>
-                  {activas.map((solicitud) => (
+                  {activas.map((solicitud: SolicitudItem) => (
                     <div key={solicitud.id} className={styles.panelRow}>
                       <div>
                         <div className={styles.rowTitle}>{solicitud.titulo}</div>
