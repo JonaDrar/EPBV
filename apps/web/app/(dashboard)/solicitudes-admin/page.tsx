@@ -19,8 +19,9 @@ export default async function SolicitudesAdminPage() {
     },
     orderBy: { createdAt: "desc" },
   });
+  type SolicitudItem = (typeof solicitudes)[number];
 
-  const pendientes = solicitudes.map((solicitud) => ({
+  const pendientes = solicitudes.map((solicitud: SolicitudItem) => ({
     id: solicitud.id,
     titulo: solicitud.titulo,
     descripcion: solicitud.descripcion,
