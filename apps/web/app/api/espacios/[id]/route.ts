@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, logAuditEvent, EspacioTipo } from "@ebv/db";
+import { prisma, logAuditEvent } from "@ebv/db";
 import { getAuthFromRequest, requireRole } from "@ebv/auth";
 import { buildAuditMetadata } from "@/lib/audit";
 
 export const runtime = "nodejs";
+type EspacioTipo = "SALA" | "SALON" | "CANCHA";
 
 export async function PATCH(
   req: NextRequest,
