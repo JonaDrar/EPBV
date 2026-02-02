@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, Prisma } from "@ebv/db";
+import { prisma } from "@ebv/db";
 import { getAuthFromRequest, requireRole } from "@ebv/auth";
 import { parseReservaDescription, parseFechaDDMMYYYY } from "@/lib/reserva-request";
 
@@ -25,8 +25,8 @@ export async function GET(req: NextRequest) {
   const start = req.nextUrl.searchParams.get("start");
   const end = req.nextUrl.searchParams.get("end");
   const includeSolicitudes = req.nextUrl.searchParams.get("includeSolicitudes") === "1";
-  const rangeFilterReserva: Prisma.ReservaWhereInput = buildRangeFilter(start, end);
-  const rangeFilterEvento: Prisma.EventoWhereInput = buildRangeFilter(start, end);
+  const rangeFilterReserva = buildRangeFilter(start, end);
+  const rangeFilterEvento = buildRangeFilter(start, end);
 
   const [reservas, eventos] = await Promise.all([
     prisma.reserva.findMany({
