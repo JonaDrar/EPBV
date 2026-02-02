@@ -2,7 +2,17 @@
 import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, Role, User } from "@ebv/db";
+import { prisma } from "@ebv/db";
+
+type Role = "ADMIN" | "INTERNAL";
+type User = {
+  id: string;
+  email: string;
+  role: Role;
+  active: boolean;
+  passwordHash: string;
+  name?: string | null;
+};
 
 export const SESSION_COOKIE_NAME = "ebv_session";
 export const SESSION_MAX_DAYS = 30;
