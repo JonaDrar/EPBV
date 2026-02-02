@@ -1,4 +1,7 @@
-import type { User } from "@ebv/db";
+type User = {
+  name: string | null;
+  email: string;
+};
 import { LogoutButton } from "./LogoutButton";
 import styles from "./user-bar.module.css";
 
