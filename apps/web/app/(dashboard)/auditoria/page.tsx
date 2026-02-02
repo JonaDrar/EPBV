@@ -13,6 +13,7 @@ export default async function AuditoriaPage() {
     take: 200,
     include: { actorUser: true },
   });
+  type LogItem = (typeof logs)[number];
 
 
   return (
@@ -40,7 +41,7 @@ export default async function AuditoriaPage() {
             </tr>
           </thead>
           <tbody>
-            {logs.map((log) => (
+            {logs.map((log: LogItem) => (
               <tr key={log.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td>{log.createdAt.toLocaleString()}</td>
                 <td>{log.actorUser?.email ?? "-"}</td>
