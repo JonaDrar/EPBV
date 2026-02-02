@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, logAuditEvent } from "@ebv/db";
+import { prisma, logAuditEvent, EspacioTipo } from "@ebv/db";
 import { getAuthFromRequest, requireRole } from "@ebv/auth";
 import { buildAuditMetadata } from "@/lib/audit";
 
@@ -16,9 +16,15 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  const data: { nombre?: string; tipo?: string; activo?: boolean } = {};
+  const data: { nombre?: string; tipo?: EspacioTipo; activo?: boolean } = {};
   if (body?.nombre) data.nombre = body.nombre.trim();
-  if (body?.tipo) data.tipo = body.tipo;
+  if (body?.tipo) {
+    const tiposValidos: EspacioTipo[] = ["SALA", "SALON", "CANCHA"];
+    if (!tiposValidos.includes(body.tipo)) {
+      return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
+    }
+    data.tipo = body.tipo;
+  }
   if (typeof body?.activo === "boolean") data.activo = body.activo;
 
   if (Object.keys(data).length === 0) {

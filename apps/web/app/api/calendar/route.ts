@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@ebv/db";
+import { prisma, Prisma } from "@ebv/db";
 import { getAuthFromRequest, requireRole } from "@ebv/auth";
 import { parseReservaDescription, parseFechaDDMMYYYY } from "@/lib/reserva-request";
 
@@ -14,7 +14,7 @@ function buildRangeFilter(start?: string | null, end?: string | null) {
   }
   return {
     AND: [{ fechaInicio: { lt: endDate } }, { fechaFin: { gt: startDate } }],
-  } as const;
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -25,19 +25,20 @@ export async function GET(req: NextRequest) {
   const start = req.nextUrl.searchParams.get("start");
   const end = req.nextUrl.searchParams.get("end");
   const includeSolicitudes = req.nextUrl.searchParams.get("includeSolicitudes") === "1";
-  const rangeFilter = buildRangeFilter(start, end);
+  const rangeFilterReserva: Prisma.ReservaWhereInput = buildRangeFilter(start, end);
+  const rangeFilterEvento: Prisma.EventoWhereInput = buildRangeFilter(start, end);
 
   const [reservas, eventos] = await Promise.all([
     prisma.reserva.findMany({
       where: {
         estado: "ACTIVA",
-        ...rangeFilter,
+        ...rangeFilterReserva,
       },
       include: { espacio: true },
       orderBy: { fechaInicio: "asc" },
     }),
     prisma.evento.findMany({
-      where: rangeFilter,
+      where: rangeFilterEvento,
       include: { espacio: true },
       orderBy: { fechaInicio: "asc" },
     }),
@@ -57,33 +58,33 @@ export async function GET(req: NextRequest) {
     const rangeStart = start ? new Date(start) : null;
     const rangeEnd = end ? new Date(end) : null;
 
-    solicitudEvents = solicitudes
-      .map((solicitud) => {
-        const meta = parseReservaDescription(solicitud.descripcion);
-        const fecha = parseFechaDDMMYYYY(meta?.fecha);
-        if (!fecha) return null;
-        const fechaFin = new Date(fecha.getTime() + 60 * 60 * 1000);
-        if (rangeStart && rangeEnd) {
-          if (!(fecha < rangeEnd && fechaFin > rangeStart)) return null;
-        }
-        const requesterEmail = solicitud.createdBy.email;
-        const requesterName = solicitud.createdBy.name || requesterEmail.split("@")[0] || requesterEmail;
-        return {
-          id: `solicitud-${solicitud.id}`,
-          title: `Solicitud • ${meta?.espacio || meta?.programa || "Espacio"}`,
-          start: fecha.toISOString(),
-          end: fechaFin.toISOString(),
-          backgroundColor: "#cc5fa7",
-          borderColor: "#cc5fa7",
-          solicitudId: solicitud.id,
-          programa: meta?.programa ?? "",
-          espacio: meta?.espacio ?? "",
-          solicitante: requesterName,
-          detalle: meta?.detalle ?? "",
-          fechaLabel: meta?.fecha ?? "",
-        };
-      })
-      .filter((item): item is Record<string, unknown> => Boolean(item));
+    const mapped: Array<Record<string, unknown>> = [];
+    for (const solicitud of solicitudes) {
+      const meta = parseReservaDescription(solicitud.descripcion);
+      const fecha = parseFechaDDMMYYYY(meta?.fecha);
+      if (!fecha) continue;
+      const fechaFin = new Date(fecha.getTime() + 60 * 60 * 1000);
+      if (rangeStart && rangeEnd) {
+        if (!(fecha < rangeEnd && fechaFin > rangeStart)) continue;
+      }
+      const requesterEmail = solicitud.createdBy.email;
+      const requesterName = solicitud.createdBy.name || requesterEmail.split("@")[0] || requesterEmail;
+      mapped.push({
+        id: `solicitud-${solicitud.id}`,
+        title: `Solicitud • ${meta?.espacio || meta?.programa || "Espacio"}`,
+        start: fecha.toISOString(),
+        end: fechaFin.toISOString(),
+        backgroundColor: "#cc5fa7",
+        borderColor: "#cc5fa7",
+        solicitudId: solicitud.id,
+        programa: meta?.programa ?? "",
+        espacio: meta?.espacio ?? "",
+        solicitante: requesterName,
+        detalle: meta?.detalle ?? "",
+        fechaLabel: meta?.fecha ?? "",
+      });
+    }
+    solicitudEvents = mapped;
   }
 
   const events = [

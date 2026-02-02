@@ -1,3 +1,4 @@
+// @ts-ignore - bcryptjs has no bundled types in this project
 import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";

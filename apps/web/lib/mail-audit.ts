@@ -1,4 +1,4 @@
-import { logAuditEvent } from "@ebv/db";
+import { logAuditEvent, Prisma } from "@ebv/db";
 import { sendTransactionalEmail, SendMailInput } from "@ebv/mail";
 
 export async function sendMailWithAudit(input: {
@@ -6,7 +6,7 @@ export async function sendMailWithAudit(input: {
   actorUserId?: string | null;
   entityType: string;
   entityId: string;
-  metadata: Record<string, unknown> | null;
+  metadata: Prisma.InputJsonValue | null;
 }) {
   const result = await sendTransactionalEmail(input.mail);
 
