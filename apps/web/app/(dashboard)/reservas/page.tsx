@@ -7,6 +7,7 @@ import { ReservaCancelButton } from "@/components/ReservaCancelButton";
 export default async function ReservasPage() {
   const user = await requireUser();
   const espacios = await prisma.espacio.findMany({ where: { activo: true } });
+  type EspacioItem = (typeof espacios)[number];
   const reservas = await prisma.reserva.findMany({
     include: { espacio: true, usuario: true },
     orderBy: { fechaInicio: "asc" },
@@ -23,7 +24,9 @@ export default async function ReservasPage() {
           No hay espacios activos para reservar.
         </div>
       ) : (
-        <ReservaForm espacios={espacios.map((espacio) => ({ id: espacio.id, nombre: espacio.nombre }))} />
+        <ReservaForm
+          espacios={espacios.map((espacio: EspacioItem) => ({ id: espacio.id, nombre: espacio.nombre }))}
+        />
       )}
       <div style={{
         padding: 16,
