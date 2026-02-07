@@ -74,7 +74,11 @@ function Icon({ src, alt }: { src: string; alt: string }) {
 export default async function HomePage() {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
-  const pendingCount = isAdmin ? await prisma.solicitud.count({ where: { estado: "PENDIENTE" } }) : 0;
+  const pendingCount = isAdmin
+    ? await prisma.solicitud.count({
+        where: { tipo: "OTRO", estado: "RECIBIDA" },
+      })
+    : 0;
 
   return (
     <div className={styles.page}>

@@ -21,10 +21,11 @@ enum SolicitudTipo {
 }
 
 enum SolicitudEstado {
-  PENDIENTE
+  RECIBIDA
   EN_PROCESO
-  RESUELTA
+  APROBADA
   RECHAZADA
+  LISTA
 }
 
 enum EspacioTipo {
@@ -59,17 +60,24 @@ model User {
 model Solicitud {
   id           String               @id @default(cuid())
   tipo         SolicitudTipo
-  estado       SolicitudEstado      @default(PENDIENTE)
+  estado       SolicitudEstado      @default(RECIBIDA)
   titulo       String
   descripcion  String
+  espacioSolicitadoId String?
+  fechaInicioSolicitada DateTime?
+  fechaFinSolicitada DateTime?
   createdById  String
   createdBy    User                 @relation("SolicitudCreatedBy", fields: [createdById], references: [id])
+  espacioSolicitado Espacio?        @relation("SolicitudEspacio", fields: [espacioSolicitadoId], references: [id])
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
   comentarios SolicitudComentario[]
 
   @@index([estado])
+  @@index([tipo, estado])
+  @@index([fechaFinSolicitada])
+  @@index([espacioSolicitadoId])
 }
 
 model SolicitudComentario {
@@ -91,6 +99,7 @@ model Espacio {
 
   reservas  Reserva[]
   eventos   Evento[]
+  solicitudesSolicitadas Solicitud[] @relation("SolicitudEspacio")
 }
 
 model Reserva {

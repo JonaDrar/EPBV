@@ -56,7 +56,7 @@ export default async function ProgramaPage({ params }: { params: { slug: string 
   const solicitudes = await prisma.solicitud.findMany({
     where: {
       tipo: "OTRO",
-      estado: "RESUELTA",
+      estado: "APROBADA",
       descripcion: { contains: `programa=${program.name}`, mode: "insensitive" },
     },
     select: { id: true, titulo: true },

@@ -2,7 +2,13 @@ import Link from "next/link";
 import { prisma } from "@ebv/db";
 import styles from "./solicitudes.module.css";
 import { requireUser } from "@/lib/auth-server";
-import { displayReservaDescription } from "@/lib/reserva-request";
+import { displayReservaDescription, parseReservaDescription } from "@/lib/reserva-request";
+import {
+  getSolicitudEstadoLabel,
+  isSolicitudInHistory,
+  type SolicitudEstado,
+} from "@/lib/solicitud-workflow";
+import { formatDateInBusinessTime, formatTimeInBusinessTime } from "@/lib/schedule";
 
 function ArrowButton() {
   return (
@@ -47,33 +53,61 @@ function NuevaSolicitudCard({
   );
 }
 
-const estadoLabel: Record<string, string> = {
-  PENDIENTE: "Pendiente",
-  EN_PROCESO: "En proceso",
-  RESUELTA: "Resuelta",
-  RECHAZADA: "Rechazada",
-};
+function getSolicitudDescription(input: {
+  tipo: string;
+  descripcion: string;
+  fechaInicioSolicitada?: Date | null;
+  fechaFinSolicitada?: Date | null;
+}) {
+  const detail = displayReservaDescription(input.descripcion);
 
-function getSolicitudEstadoLabel(estado: string, tipo: string) {
-  if (tipo === "OTRO" && estado === "RESUELTA") {
-    return "Aprobada";
+  if (input.tipo !== "OTRO") {
+    return detail;
   }
-  return estadoLabel[estado] ?? estado;
+
+  if (input.fechaInicioSolicitada && input.fechaFinSolicitada) {
+    const schedule = `${formatDateInBusinessTime(input.fechaInicioSolicitada)} · ${formatTimeInBusinessTime(
+      input.fechaInicioSolicitada
+    )} - ${formatTimeInBusinessTime(input.fechaFinSolicitada)}`;
+    return detail ? `${schedule} · ${detail}` : schedule;
+  }
+
+  const meta = parseReservaDescription(input.descripcion);
+  if (meta?.fecha) {
+    const start = meta.horaInicio || "09:00";
+    const end = meta.horaFin || "10:00";
+    const schedule = `${meta.fecha} · ${start} - ${end}`;
+    return detail ? `${schedule} · ${detail}` : schedule;
+  }
+
+  return detail || "Solicitud de espacio";
 }
 
 export default async function SolicitudesPage() {
   const user = await requireUser();
+  const now = new Date();
   const solicitudes = await prisma.solicitud.findMany({
     where: { createdById: user.id },
     orderBy: { createdAt: "desc" },
   });
   type SolicitudItem = (typeof solicitudes)[number];
 
-  const activas = solicitudes.filter(
-    (s: SolicitudItem) => s.estado === "PENDIENTE" || s.estado === "EN_PROCESO"
+  const historial = solicitudes.filter((s: SolicitudItem) =>
+    isSolicitudInHistory({
+      tipo: s.tipo,
+      estado: s.estado as SolicitudEstado,
+      fechaFinSolicitada: s.fechaFinSolicitada,
+      now,
+    })
   );
-  const historial = solicitudes.filter(
-    (s: SolicitudItem) => s.estado === "RESUELTA" || s.estado === "RECHAZADA"
+  const activas = solicitudes.filter(
+    (s: SolicitudItem) =>
+      !isSolicitudInHistory({
+        tipo: s.tipo,
+        estado: s.estado as SolicitudEstado,
+        fechaFinSolicitada: s.fechaFinSolicitada,
+        now,
+      })
   );
 
   return (
@@ -135,9 +169,16 @@ export default async function SolicitudesPage() {
                     <div key={solicitud.id} className={styles.panelRow}>
                       <div>
                         <div className={styles.rowTitle}>{solicitud.titulo}</div>
-                        <div className={styles.rowDesc}>{displayReservaDescription(solicitud.descripcion)}</div>
+                        <div className={styles.rowDesc}>
+                          {getSolicitudDescription({
+                            tipo: solicitud.tipo,
+                            descripcion: solicitud.descripcion,
+                            fechaInicioSolicitada: solicitud.fechaInicioSolicitada,
+                            fechaFinSolicitada: solicitud.fechaFinSolicitada,
+                          })}
+                        </div>
                         <div className={styles.rowMeta}>
-                          Estado: {getSolicitudEstadoLabel(solicitud.estado, solicitud.tipo)}
+                          Estado: {getSolicitudEstadoLabel(solicitud.estado as SolicitudEstado)}
                         </div>
                       </div>
                       <div className={styles.panelRowStatus}>
@@ -176,11 +217,18 @@ export default async function SolicitudesPage() {
                     <div key={solicitud.id} className={styles.historyRow}>
                       <div>
                         <div className={styles.rowTitle}>{solicitud.titulo}</div>
-                        <div className={styles.rowDesc}>{displayReservaDescription(solicitud.descripcion)}</div>
+                        <div className={styles.rowDesc}>
+                          {getSolicitudDescription({
+                            tipo: solicitud.tipo,
+                            descripcion: solicitud.descripcion,
+                            fechaInicioSolicitada: solicitud.fechaInicioSolicitada,
+                            fechaFinSolicitada: solicitud.fechaFinSolicitada,
+                          })}
+                        </div>
                       </div>
                       <div className={styles.historyRowSolution}>
                         <div className={styles.solution}>
-                          {getSolicitudEstadoLabel(solicitud.estado, solicitud.tipo)}
+                          {getSolicitudEstadoLabel(solicitud.estado as SolicitudEstado)}
                         </div>
                       </div>
                     </div>

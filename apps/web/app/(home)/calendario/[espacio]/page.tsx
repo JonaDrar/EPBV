@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { prisma } from "@ebv/db";
 import styles from "../calendario-form.module.css";
 import { programs } from "@/lib/programs";
 import { ReservaRequestForm } from "@/components/ReservaRequestForm";
@@ -8,9 +9,27 @@ const espaciosLabels: Record<string, string> = {
   "cancha": "Cancha",
 };
 
-export default function CalendarioEspacioPage({ params }: { params: { espacio: string } }) {
+const espaciosTipo: Record<string, "SALON" | "CANCHA"> = {
+  "salon-multiuso": "SALON",
+  cancha: "CANCHA",
+};
+
+export default async function CalendarioEspacioPage({ params }: { params: { espacio: string } }) {
   const espacioKey = params.espacio;
   const espacioLabel = espaciosLabels[espacioKey] ?? "Salón";
+  const tipo = espaciosTipo[espacioKey] ?? "SALON";
+
+  const espacios = await prisma.espacio.findMany({
+    where: {
+      tipo,
+      activo: true,
+    },
+    orderBy: { nombre: "asc" },
+    select: {
+      id: true,
+      nombre: true,
+    },
+  });
 
   return (
     <div className={styles.page}>
@@ -30,7 +49,17 @@ export default function CalendarioEspacioPage({ params }: { params: { espacio: s
       </div>
 
       <div className={styles.formWrap}>
-        <ReservaRequestForm espacioLabel={espacioLabel} programas={programs.map((item) => item.name)} />
+        {espacios.length === 0 ? (
+          <div style={{ fontSize: 14, color: "#7b7b7b" }}>
+            No hay espacios activos para este tipo.
+          </div>
+        ) : (
+          <ReservaRequestForm
+            espacioLabel={espacioLabel}
+            programas={programs.map((item) => item.name)}
+            espacios={espacios}
+          />
+        )}
       </div>
     </div>
   );

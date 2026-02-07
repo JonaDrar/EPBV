@@ -6,3 +6,5 @@ out
 .env.*.local
 .DS_Store
 prisma/dev.db
+apps/web/playwright-report
+apps/web/test-results

@@ -67,7 +67,9 @@ export default function SolicitudTipoPage({ params }: { params: { tipo: string }
               <input
                 type="text"
                 className={styles.input}
-                defaultValue={formattedDate}
+                value={formattedDate}
+                readOnly
+                aria-readonly
                 inputMode="numeric"
                 placeholder="DD/MM/AAAA"
               />

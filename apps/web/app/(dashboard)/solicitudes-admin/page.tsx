@@ -12,12 +12,13 @@ export default async function SolicitudesAdminPage() {
   const solicitudes = await prisma.solicitud.findMany({
     where: {
       tipo: "OTRO",
-      estado: "PENDIENTE",
+      estado: "RECIBIDA",
     },
     include: {
       createdBy: true,
+      espacioSolicitado: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ fechaInicioSolicitada: "asc" }, { createdAt: "asc" }],
   });
   type SolicitudItem = (typeof solicitudes)[number];
 
@@ -28,6 +29,9 @@ export default async function SolicitudesAdminPage() {
     createdAt: solicitud.createdAt.toISOString(),
     createdByEmail: solicitud.createdBy.email,
     createdByName: solicitud.createdBy.name,
+    fechaInicioSolicitada: solicitud.fechaInicioSolicitada?.toISOString() ?? null,
+    fechaFinSolicitada: solicitud.fechaFinSolicitada?.toISOString() ?? null,
+    espacioSolicitadoNombre: solicitud.espacioSolicitado?.nombre ?? null,
   }));
 
   return (

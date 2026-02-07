@@ -51,9 +51,12 @@ export async function GET(req: NextRequest) {
     const solicitudes = await prisma.solicitud.findMany({
       where: {
         tipo: "OTRO",
-        estado: "PENDIENTE",
+        estado: "RECIBIDA",
       },
-      include: { createdBy: true },
+      include: {
+        createdBy: true,
+        espacioSolicitado: true,
+      },
       orderBy: { createdAt: "asc" },
     });
 
@@ -63,24 +66,35 @@ export async function GET(req: NextRequest) {
     const mapped: Array<Record<string, unknown>> = [];
     for (const solicitud of solicitudes) {
       const meta = parseReservaDescription(solicitud.descripcion);
-      const fecha = parseFechaDDMMYYYY(meta?.fecha);
-      if (!fecha) continue;
-      const fechaFin = new Date(fecha.getTime() + 60 * 60 * 1000);
+
+      const fechaInicio =
+        solicitud.fechaInicioSolicitada ??
+        parseFechaDDMMYYYY(meta?.fecha, meta?.horaInicio || "09:00");
+      const fechaFin =
+        solicitud.fechaFinSolicitada ??
+        parseFechaDDMMYYYY(meta?.fecha, meta?.horaFin || "10:00");
+
+      if (!fechaInicio || !fechaFin || fechaFin <= fechaInicio) continue;
+
       if (rangeStart && rangeEnd) {
-        if (!(fecha < rangeEnd && fechaFin > rangeStart)) continue;
+        if (!(fechaInicio < rangeEnd && fechaFin > rangeStart)) continue;
       }
+
       const requesterEmail = solicitud.createdBy.email;
       const requesterName = solicitud.createdBy.name || requesterEmail.split("@")[0] || requesterEmail;
+      const espacioNombre =
+        solicitud.espacioSolicitado?.nombre ?? meta?.espacio ?? "Espacio";
+
       mapped.push({
         id: `solicitud-${solicitud.id}`,
-        title: `Solicitud • ${meta?.espacio || meta?.programa || "Espacio"}`,
-        start: fecha.toISOString(),
+        title: `Solicitud • ${espacioNombre}`,
+        start: fechaInicio.toISOString(),
         end: fechaFin.toISOString(),
         backgroundColor: "#cc5fa7",
         borderColor: "#cc5fa7",
         solicitudId: solicitud.id,
         programa: meta?.programa ?? "",
-        espacio: meta?.espacio ?? "",
+        espacio: espacioNombre,
         solicitante: requesterName,
         detalle: meta?.detalle ?? "",
         fechaLabel: meta?.fecha ?? "",

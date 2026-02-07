@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-type SolicitudEstado = "PENDIENTE" | "EN_PROCESO" | "RESUELTA" | "RECHAZADA";
+type SolicitudEstado = "RECIBIDA" | "EN_PROCESO" | "APROBADA" | "RECHAZADA" | "LISTA";
 type Role = "ADMIN" | "INTERNAL";
 
-const estados: SolicitudEstado[] = ["PENDIENTE", "EN_PROCESO", "RESUELTA", "RECHAZADA"];
+const estados: SolicitudEstado[] = ["RECIBIDA", "EN_PROCESO", "APROBADA", "RECHAZADA", "LISTA"];
 
 export function SolicitudEstadoForm({
   solicitudId,

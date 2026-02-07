@@ -8,7 +8,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "prisma:backfill-space-solicitudes": "tsx prisma/backfill-space-solicitudes.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
